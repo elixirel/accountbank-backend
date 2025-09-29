@@ -12,3 +12,9 @@ DB_USER=YOUR_DATABASE_USERNAME
 DB_PASSWORD=YOUR_DATABASE_PASSWORD
 DB_NAME=YOUR_DATABASE_NAME
 ```
+
+you can change your server port by adding this line in .env file
+
+```
+PORT=YOUR_SERVER_PORT
+```
