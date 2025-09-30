@@ -11,9 +11,7 @@ export async function getUserById(userId) {
 }
 export async function createUser(email, password) {
   const passwordHash = await hashPassword(password);
-  console.log(
-    `insert into user(email, password) values(${email}, ${passwordHash})`
-  );
+
   const [result] = await pool.query(
     "insert into user(email, password) values(?,?)",
     [email, passwordHash]
