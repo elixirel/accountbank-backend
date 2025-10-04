@@ -19,3 +19,13 @@ export async function addUser(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export async function login(req, res) {
+  const { email, password } = req.body;
+  const login = await model.login(email, password);
+  if (login.login) {
+    res.json({ message: login.message, token: login.token });
+  } else {
+    res.status(500).json({ message: "Wrong password" });
+  }
+}
