@@ -1,10 +1,9 @@
 ### prefix AUTH : Authentication / Authorization error
 
 ```
-AUTH001 : Wrong email or password
-AUTH002 : Access Token Expired
-AUTH003 : Wrong Token Provided
-AUTH004 : Insufficient Authorization Level
+AUTH001 : Invalid or expired Token Provided
+AUTH002 : No or Wrong Token Header Provided
+AUTH003 : Insufficient Authorization Level
 ```
 
 ### prefix USER : User signup / signin error

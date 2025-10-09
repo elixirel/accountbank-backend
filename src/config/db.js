@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 
 dotenv.config();
-const app = express();
+// const app = express();
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
