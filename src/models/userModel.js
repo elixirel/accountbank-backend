@@ -2,6 +2,7 @@ import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
+import { parseExpiresInToSeconds } from "../../utils/timeParser.js";
 
 const saltrounds = 12;
 const hashPassword = async (rawPassword) => {
@@ -25,30 +26,48 @@ async function getUserByEmail(email) {
   return row[0];
 }
 
-export async function login(email, password, ipAddress, userAgent = null, sessionId = null) {
+export async function login(email, password) {
   const user = await getUserByEmail(email);
   if (user && (await bcrypt.compare(password, user.password))) {
+    const [row] = await pool.query(
+      "select * from user_refresh_token where user_uid = ?",
+      [user.uid]
+    );
+    if (row) {
+      await pool.query("delete from user_refresh_token where user_uid = ?", [
+        user.uid,
+      ]);
+      return { login: false, errorCode: "LGIN002" };
+    }
+    const sessionId = uuid();
     const token = jwt.sign(
       {
         uid: user.uid,
         email: user.email,
+        sessionId: sessionId,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
-    const refreshToken = jwt.sign({ uid: user.uid },
+    const refreshToken = jwt.sign(
+      { uid: user.uid },
       process.env.JWT_REFRESH_SECRET,
-      {expiresIn : process.env.JWT_REFRESH_EXPIRES_IN }
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }
     );
-    const [row] = await pool.query("select * from user_refresh_token where user_uid = ?", [user.uid])
-    if(row) {
-      const oldSession = row.session_id
-      if(oldSession = sessionId) {
-        await pool.query("update user_refresh_token set refresh_token = ?, user_agent = ?, ip_address = ? where user_uid = ?", [refreshToken, user.uid])
-      } else {
-        return { login : false, errorCode: "LGIN002" }
-      }
-    }
-    return { login: true, message: "Login Success", token : token, refreshToken : refreshToken, sessionId : sessionId };
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt =
+      now + parseExpiresInToSeconds(process.env.JWT_REFRESH_EXPIRES_IN);
+    await pool.query(
+      "insert into user_refresh_token (user_uid, session_id, refresh_token, created_at, expires_at) values ( ?, ?, ?, ?, ?)",
+      [user.uid, sessionId, refreshToken, now, expiresAt]
+    );
+    return {
+      login: true,
+      message: "Login Success",
+      token: token,
+      refreshToken: refreshToken,
+      sessionId: sessionId,
+    };
   } else return { login: false, errorCode: "LGIN001" };
 }
