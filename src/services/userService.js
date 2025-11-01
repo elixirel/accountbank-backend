@@ -24,8 +24,8 @@ export async function login(req, res) {
   const { email, password } = req.body;
   const login = await model.login(email, password);
   if (login.login) {
-    res.json({ message: login.message, token: login.token });
+    res.json({ message: login.message, token: login.token, refreshToken: login.refreshToken, sessionId: login.sessionId });
   } else {
-    res.status(500).json({ message: "Wrong password" });
+    res.status(500).json({ message: "login failed." });
   }
 }

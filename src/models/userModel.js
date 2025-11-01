@@ -33,7 +33,7 @@ export async function login(email, password) {
       "select * from user_refresh_token where user_uid = ?",
       [user.uid]
     );
-    if (row) {
+    if (row[0]) {
       await pool.query("delete from user_refresh_token where user_uid = ?", [
         user.uid,
       ]);
