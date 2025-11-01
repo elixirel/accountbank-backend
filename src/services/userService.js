@@ -24,8 +24,23 @@ export async function login(req, res) {
   const { email, password } = req.body;
   const login = await model.login(email, password);
   if (login.login) {
-    res.json({ message: login.message, token: login.token, refreshToken: login.refreshToken, sessionId: login.sessionId });
+    res.json({
+      message: login.message,
+      token: login.token,
+      refreshToken: login.refreshToken,
+      sessionId: login.sessionId,
+    });
   } else {
-    res.status(500).json({ message: "login failed." });
+    res
+      .status(500)
+      .json({ message: "login failed.", errorCode: login.errorCode });
   }
+}
+
+export async function logout(req, res) {
+  const { email } = req.body;
+  await model.logout(email);
+  res.json({
+    message: "logout success",
+  });
 }

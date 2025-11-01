@@ -71,3 +71,12 @@ export async function login(email, password) {
     };
   } else return { login: false, errorCode: "LGIN001" };
 }
+
+export async function logout(email) {
+  const [row] = await pool.query("select uid from user where email = ?", email);
+  console.log(row[0]);
+  await pool.query(
+    "delete from user_refresh_token where user_uid = ?",
+    row[0].uid
+  );
+}
